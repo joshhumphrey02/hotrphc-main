@@ -2,24 +2,17 @@
 
 import { DataTableColumnHeader } from '@/components/shared/data-table-column-header';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuLabel,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
 import { IMember } from '@/types';
-import { DotsVerticalIcon } from '@radix-ui/react-icons';
 import { ColumnDef, Row } from '@tanstack/react-table';
 import { format } from 'date-fns/format';
-import { UserRound } from 'lucide-react';
 import Link from 'next/link';
+import MemberDropdown from './member-dropdown';
+import { Badge } from '@/components/ui/badge';
+import { UserData } from '@/app/(users)/_components/query';
 
-export const columns: ColumnDef<IMember>[] = [
+export const columns: ColumnDef<UserData>[] = [
 	{
 		id: 'select',
 		header: ({ table }) => (
@@ -67,7 +60,7 @@ export const columns: ColumnDef<IMember>[] = [
 							{name}
 						</div>
 						<div className="text-sm text-gray-500">
-							<span className="truncate">{member.phoneNumber}</span>
+							<span className="truncate">{member?.phoneNumber || ''}</span>
 						</div>
 					</Link>
 				</div>
@@ -76,9 +69,9 @@ export const columns: ColumnDef<IMember>[] = [
 		filterFn: (row, id, value) => {
 			const member = row.original;
 
-			const firstName = member.firstName || '';
-			const lastName = member.lastName || '';
-			const phoneNumber = member.phoneNumber || '';
+			const firstName = member?.firstName || '';
+			const lastName = member?.lastName || '';
+			const phoneNumber = member?.phoneNumber || '';
 			const newRegex = new RegExp(value, 'ig');
 			return (
 				newRegex.test(firstName) ||
@@ -102,14 +95,18 @@ export const columns: ColumnDef<IMember>[] = [
 		},
 	},
 	{
-		id: 'phoneNumber',
-		header: 'Phone Number',
+		id: 'verified',
+		header: 'Verified',
 		cell({ row }) {
-			const phoneNumber = row.original?.phoneNumber;
+			const verified = row.original?.status;
 			return (
-				<span className="text-sm text-gray-500 ml-auto">
-					{phoneNumber || 'N/A'}
-				</span>
+				<Badge
+					className={cn(
+						'text-sm ml-auto text-white',
+						verified === 'VERIFIED' ? 'bg-green-500' : 'bg-yellow-500'
+					)}>
+					{verified || 'Pending'}
+				</Badge>
 			);
 		},
 	},
@@ -117,9 +114,9 @@ export const columns: ColumnDef<IMember>[] = [
 		accessorKey: 'category',
 		header: 'Category',
 		cell({ row }) {
-			const category = row.original.category;
+			const category = row.original?.role;
 			return (
-				<span className="text-sm text-blue-500 mx-auto">
+				<span className="text-sm text-blue-500 mx-auto capitalize">
 					{category || 'N/A'}
 				</span>
 			);
@@ -129,8 +126,16 @@ export const columns: ColumnDef<IMember>[] = [
 		accessorKey: 'gender',
 		header: 'Gender',
 		cell({ row }) {
-			const gender = row.original.gender;
-			return <span className="text-sm text-center">{gender || ''}</span>;
+			const gender = row.original?.gender;
+			return (
+				<span
+					className={cn(
+						'text-sm text-center',
+						gender === 'M' ? 'text-green-500' : 'text-yellow-500'
+					)}>
+					{gender || ''}
+				</span>
+			);
 		},
 	},
 	{
@@ -146,24 +151,6 @@ interface DataTableRowActionsProps<TData> {
 export function DataTableRowActions<TData>({
 	row,
 }: DataTableRowActionsProps<TData>) {
-	return (
-		<DropdownMenu>
-			<DropdownMenuTrigger asChild>
-				<Button
-					variant="outline"
-					className="flex h-10 w-10 p-0 data-[state=open]:bg-muted border-gray-30">
-					<DotsVerticalIcon className="h-4 w-4" />
-					<span className="sr-only">Open menu</span>
-				</Button>
-			</DropdownMenuTrigger>
-			<DropdownMenuContent align="end" className="w-[160px]">
-				<DropdownMenuLabel>Member menu</DropdownMenuLabel>
-				<DropdownMenuSeparator />
-				<DropdownMenuItem className="flex gap-2 items-center">
-					<UserRound size={16} />
-					Edit member
-				</DropdownMenuItem>
-			</DropdownMenuContent>
-		</DropdownMenu>
-	);
+	const user: IMember = row.original as any;
+	return <MemberDropdown id={user.id as string} />;
 }

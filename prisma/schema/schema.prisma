@@ -1,0 +1,109 @@
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["relationJoins", "tracing", "prismaSchemaFolder", "views", "postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [postgis]
+}
+
+
+
+model Request {
+  id                  String         @id @default(uuid())
+  uid                 Int            @unique @default(autoincrement())
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  status              RequestStatus  @default(PENDING)
+  userId              String
+  user                User           @relation(fields: [userId], references: [id])
+  message             String?
+}
+
+model Report {
+  id        String       @id @default(uuid())
+  uid       Int          @unique @default(autoincrement())
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  caseId    Int          @default(autoincrement())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id])
+  reason    String       @db.Text
+  status    ReportStatus @default(PENDING)
+  comment String?
+}
+
+
+model Notification {
+  id            String               @id @default(uuid())
+  uid           Int                  @unique @default(autoincrement())
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  ownerId       String
+  owner         User                 @relation("NotificationOwner", fields: [ownerId], references: [id])
+  status        NotificationStatus   @default(UNREAD)
+  category      NotificationCategory
+}
+
+
+
+enum ReportStatus {
+  PENDING
+  OPEN
+  ON_HOLD
+  RESOLVED
+  CLOSED
+}
+
+enum OnlineStatus {
+  ONLINE
+  OFFLINE
+}
+
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELED
+}
+
+enum ConnectionStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELED
+  IGNORED
+  BLOCKED
+}
+
+enum NotificationStatus {
+  SEEN
+  UNREAD
+  READ
+}
+
+enum NotificationCategory {
+  UPDATES
+  REQUESTS
+}
+
+enum Role {
+  ADMIN
+  SUPER_ADMIN
+  MEMBER
+  WORKER
+  SECURITY
+  OTHERS
+}
+
+enum UserStatus {
+  ACTIVE
+  VERIFIED
+  DEACTIVATED
+  SUSPENDED
+  BANNED
+  DELETED
+}

@@ -66,6 +66,48 @@
 	}
 }
 
+@font-face {
+	font-family: 'RobotoBlack';
+	src: url('../assets/fonts/Roboto-Black.ttf');
+}
+@font-face {
+	font-family: 'RobotoBold';
+	src: url('../assets/fonts/Roboto-Bold.ttf');
+}
+@font-face {
+	font-family: 'RobotoMedium';
+	src: url('../assets/fonts/Roboto-Medium.ttf');
+}
+@font-face {
+	font-family: 'RobotoRegular';
+	src: url('../assets/fonts/Roboto-Regular.ttf');
+}
+@font-face {
+	font-family: 'RobotoLight';
+	src: url('../assets//fonts/Roboto-Light.ttf');
+}
+@font-face {
+	font-family: 'RobotoThin';
+	src: url('../assets//fonts/Roboto-Thin.ttf');
+}
+
+h1,
+h2 {
+	font-family: RobotoBold;
+}
+h3 {
+	font-family: RobotoMedium;
+}
+h4 {
+	font-family: RobotoRegular;
+}
+h5 {
+	font-family: RobotoLight;
+}
+a {
+	font-family: RobotoLight;
+}
+
 @layer base {
 	* {
 		@apply border-border;
@@ -73,4 +115,63 @@
 	body {
 		@apply bg-background text-foreground;
 	}
+}
+
+@layer base {
+	th,
+	td {
+		@apply py-3 px-2 text-left;
+	}
+	thead {
+		@apply bg-secondary;
+	}
+	th {
+		@apply font-[RobotoRegular] lg:text-base text-sm;
+	}
+	td {
+		@apply font-[RobotoLight] lg:text-sm text-xs;
+	}
+	a {
+		@apply text-foreground cursor-pointer active:bg-transparent active:text-sky-300;
+	}
+}
+
+/* For WebKit browsers (Chrome, Safari) */
+::-webkit-scrollbar {
+	width: 0.0625rem; /* Width of the scrollbar */
+	height: 0.0625rem;
+}
+
+::-webkit-scrollbar-track {
+	background: #ffff; /* Color of the track (background behind the scrollbar) */
+}
+
+::-webkit-scrollbar-thumb {
+	background-color: #dddd; /* Color of the scrollbar thumb (the moving part) */
+	border-radius: 2rem; /* Rounded corners for the scrollbar thumb */
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background-color: #aaa; /* Color of the scrollbar thumb on hover */
+}
+
+.main {
+	display: flex;
+	flex-direction: column;
+	position: relative;
+	gap: 1rem;
+}
+.sub_main {
+	grid-template-columns: 12rem auto;
+	width: 100%;
+	position: relative;
+	gap: 0.5rem;
+	display: grid;
+}
+.sub {
+	grid-column-start: 2;
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	margin-top: 0.3rem;
 }

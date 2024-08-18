@@ -1,128 +1,114 @@
-'use server';
-
-import dbConnect from '@/lib/mongodb/db';
-import { IMember } from '@/types';
-import mongoose from 'mongoose';
-import memberModel from '@/models/member';
+import prisma from '@/lib/prisma';
 
 export interface MembersWithinSixMonths {
-	month: {
-		totalMembers: number;
-		male: number;
-		female: number;
-	};
+	name: string;
+	Male: number;
+	Female: number;
 }
 
 export interface IResult {
 	totalCount: number;
 	uniqueMen: number;
 	uniqueWomen: number;
-	admins: number;
-	recentMembers: IMember[];
+	workers: number;
+	recentMembers: any;
 	totalMembersThisMonth: number;
 	membersWithinSixMonths: MembersWithinSixMonths[];
 }
 
 export const GetMembersFullData = async (): Promise<IResult | null> => {
 	try {
-		await dbConnect();
-
+		const monthNames = [
+			'Jan',
+			'Feb',
+			'Mar',
+			'Apr',
+			'May',
+			'Jun',
+			'Jul',
+			'Aug',
+			'Sep',
+			'Oct',
+			'Nov',
+			'Dec',
+		];
 		const currentDate = new Date();
 		const sixMonthsAgo = new Date(
 			currentDate.getFullYear(),
 			currentDate.getMonth() - 5,
 			1
 		);
-		const result = await memberModel.aggregate([
-			{
-				$facet: {
-					totalCount: [{ $count: 'totalCount' }],
-					uniqueMen: [{ $match: { gender: 'M' } }, { $count: 'uniqueMen' }],
-					uniqueWomen: [{ $match: { gender: 'F' } }, { $count: 'uniqueWomen' }],
-					admins: [{ $match: { category: 'admin' } }, { $count: 'admins' }],
-					recentMembers: [{ $sort: { createdAt: -1 } }, { $limit: 5 }],
-					totalMembersThisMonth: [
-						{
-							$match: {
-								createdAt: {
-									$gte: new Date(
-										currentDate.getFullYear(),
-										currentDate.getMonth(),
-										1
-									),
-								},
-							},
-						},
-						{ $count: 'totalMembersThisMonth' },
-					],
-					membersByMonth: [
-						{
-							$match: {
-								createdAt: {
-									$gte: sixMonthsAgo,
-								},
-							},
-						},
-						{
-							$group: {
-								_id: {
-									year: { $year: '$createdAt' },
-									month: { $month: '$createdAt' },
-								},
-								totalMembers: { $sum: 1 },
-								male: { $sum: { $cond: [{ $eq: ['$gender', 'M'] }, 1, 0] } },
-								female: { $sum: { $cond: [{ $eq: ['$gender', 'F'] }, 1, 0] } },
-							},
-						},
-						{ $sort: { '_id.year': 1, '_id.month': 1 } },
-						{
-							$project: {
-								_id: 0,
-								year: '$_id.year',
-								month: '$_id.month',
-								totalMembers: 1,
-								male: 1,
-								female: 1,
-							},
-						},
-					],
+
+		const totalCount = await prisma.user.count();
+
+		const uniqueMen = await prisma.user.count({
+			where: { gender: 'Male' },
+		});
+
+		const uniqueWomen = await prisma.user.count({
+			where: { gender: 'Female' },
+		});
+
+		const workers = await prisma.user.count({
+			where: { role: 'ADMIN' },
+		});
+
+		const recentMembers = await prisma.user.findMany({
+			orderBy: { createdAt: 'desc' },
+			select: {
+				firstName: true,
+				lastName: true,
+				email: true,
+				role: true,
+				createdAt: true,
+				image: true,
+				dob: true,
+				addresses: true,
+			},
+			take: 5,
+		});
+
+		const totalMembersThisMonth = await prisma.user.count({
+			where: {
+				createdAt: {
+					gte: new Date(currentDate.getFullYear(), currentDate.getMonth(), 1),
 				},
 			},
-			{
-				$project: {
-					totalCount: { $arrayElemAt: ['$totalCount.totalCount', 0] },
-					uniqueMen: { $arrayElemAt: ['$uniqueMen.uniqueMen', 0] },
-					uniqueWomen: { $arrayElemAt: ['$uniqueWomen.uniqueWomen', 0] },
-					admins: { $arrayElemAt: ['$admins.admins', 0] },
-					recentMembers: 1,
-					totalMembersThisMonth: {
-						$arrayElemAt: ['$totalMembersThisMonth.totalMembersThisMonth', 0],
-					},
-					membersWithinSixMonths: '$membersByMonth',
-				},
-			},
-		]);
+		});
 
-		if (result.length === 0) {
-			console.log('No data found.');
-			return null;
-		}
+		const membersByMonth: MembersWithinSixMonths[] = await prisma.$queryRaw`
+			SELECT
+				EXTRACT(YEAR FROM "createdAt") AS "year",
+				EXTRACT(MONTH FROM "createdAt") AS "month",
+				COUNT(*) AS "totalMembers",
+				SUM(CASE WHEN "gender" = 'Male' THEN 1 ELSE 0 END) AS "Male",
+				SUM(CASE WHEN "gender" = 'Female' THEN 1 ELSE 0 END) AS "Female"
+			FROM "User"
+			WHERE "createdAt" >= ${sixMonthsAgo}
+			GROUP BY "year", "month"
+			ORDER BY "year", "month"
+		`;
 
-		const processedResult: IResult = {
-			totalCount: result[0].totalCount || 0,
-			uniqueMen: result[0].uniqueMen || 0,
-			uniqueWomen: result[0].uniqueWomen || 0,
-			admins: result[0].admins || 0,
-			recentMembers: result[0].recentMembers || [],
-			totalMembersThisMonth: result[0].totalMembersThisMonth || 0,
-			membersWithinSixMonths: result[0].membersWithinSixMonths || [],
+		const membersWithinSixMonths = membersByMonth.map((month: any) => ({
+			name: `${monthNames[month.month - 1]}`, // You can format month name as required
+			Male: parseInt(month.Male),
+			Female: parseInt(month.Female),
+		}));
+		const result: IResult = {
+			totalCount,
+			uniqueMen,
+			uniqueWomen,
+			workers,
+			recentMembers,
+			totalMembersThisMonth,
+			membersWithinSixMonths,
 		};
 
-		return processedResult;
+		return result;
 	} catch (error) {
 		console.error('Error:', error);
 		return null;
 	} finally {
-		mongoose.disconnect();
+		await prisma.$disconnect();
 	}
 };

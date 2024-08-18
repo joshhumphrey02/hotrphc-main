@@ -1,23 +1,29 @@
+'use client';
+
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
 	DropdownMenu,
 	DropdownMenuContent,
-	DropdownMenuItem,
 	DropdownMenuLabel,
 	DropdownMenuSeparator,
-	DropdownMenuShortcut,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { CaretSortIcon } from '@radix-ui/react-icons';
 
 export function UserNav() {
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
-				<Button variant="ghost" className="relative h-8 w-8 rounded-full">
-					<Avatar className="h-8 w-8">
+				<Button
+					variant="outline"
+					aria-label="Select a team"
+					className={'w-[250px] justify-between h-12'}>
+					<Avatar className="mr-2 h-8 w-8">
 						<AvatarFallback>HJ</AvatarFallback>
 					</Avatar>
+					<span>Humphrey Joshua</span>
+					<CaretSortIcon className="ml-auto h-4 w-4 shrink-0 opacity-50" />
 				</Button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent className="w-56" align="end" forceMount>
@@ -30,7 +36,8 @@ export function UserNav() {
 					</div>
 				</DropdownMenuLabel>
 				<DropdownMenuSeparator />
-				<DropdownMenuItem>Log out</DropdownMenuItem>
+
+				<Button>Log out</Button>
 			</DropdownMenuContent>
 		</DropdownMenu>
 	);

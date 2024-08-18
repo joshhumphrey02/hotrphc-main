@@ -1,30 +1,51 @@
-import Link from 'next/link';
-
 import { cn } from '@/lib/utils';
+import { Separator } from '@/components/ui/separator';
+import { getSectionRoutes } from '@/components/constants';
+import LinkItem from './link-item';
 
 export function MainNav({
 	className,
 	...props
 }: React.HTMLAttributes<HTMLElement>) {
+	const routeHomeSection = getSectionRoutes('home');
+	const routeGeneralSection = getSectionRoutes('general');
+	const routeSettingsSection = getSectionRoutes('settings');
 	return (
-		<nav
-			className={cn('flex items-center space-x-4 lg:space-x-6', className)}
-			{...props}>
-			<Link
-				href="dashboard"
-				className="text-sm font-medium transition-colors hover:text-primary">
-				Overview
-			</Link>
-			<Link
-				href="members"
-				className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
-				Members
-			</Link>
-			<Link
-				href="#"
-				className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
-				Analytics
-			</Link>
-		</nav>
+		<aside
+			className={cn(
+				' fixed md:top-[4.8rem] shadow border-r top-0 bottom-0 ',
+				className
+			)}>
+			<nav className="flex flex-col px-4 pt-8 flex-1 min-h-[600px]">
+				<div className=" flex flex-col flex-1">
+					<div className="flex flex-col gap-2 flex-1">
+						{routeHomeSection.map((route, index) => (
+							<LinkItem href={route.path} key={index}>
+								<route.icon className="h-5 w-5 mr-2 text-[#0da5e9]" />
+								{route.name}
+							</LinkItem>
+						))}
+						{routeGeneralSection.map((route, index) => (
+							<LinkItem href={route.path} key={index}>
+								<route.icon className="h-5 w-5 mr-2 text-[#0da5e9]" />
+								{route.name}
+							</LinkItem>
+						))}
+					</div>
+
+					<Separator className="mt-4" />
+					<div className="flex py-6">
+						<div className=" flex flex-1 items-end w-full">
+							{routeSettingsSection.map((route, index) => (
+								<LinkItem href={route.path} key={index}>
+									<route.icon className="h-5 w-5 mr-2 text-[#0da5e9]" />
+									{route.name}
+								</LinkItem>
+							))}
+						</div>
+					</div>
+				</div>
+			</nav>
+		</aside>
 	);
 }

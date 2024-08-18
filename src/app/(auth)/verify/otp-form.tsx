@@ -9,7 +9,7 @@ import {
 	verifyEmail,
 	resendVerificationEmail as resendEmail,
 	logout,
-} from '@/lib/lucia/actions';
+} from '@/lib/auth/actions';
 
 const OtpForm = () => {
 	const [otp, setOtp] = useState('');
@@ -44,44 +44,48 @@ const OtpForm = () => {
 		}
 	}, [verifyEmailState?.error]);
 	return (
-		<form id="otp-form" ref={codeFormRef} action={verifyEmailAction}>
-			<div className="flex items-center justify-center gap-3">
-				<OTPInput
-					value={otp}
-					onChange={setOtp}
-					numInputs={6}
-					renderSeparator={<span>{''}</span>}
-					shouldAutoFocus={true}
-					renderInput={(props) => <input {...props} />}
-					inputStyle={{
-						width: '2.5rem',
-						height: '2.5rem',
-						borderRadius: '.4rem',
-						backgroundColor: '#eaeaef',
-					}}
-					containerStyle={{ display: 'flex', gap: '.5rem' }}
-				/>
-				<input type="text" name="code" value={otp} hidden />
-			</div>
-			{verifyEmailState?.error && (
-				<p className="my-2 text-center text-red-500">
-					{verifyEmailState?.error}
-				</p>
-			)}
-			<div className="max-w-[260px] placeholder:text-blue-500 mx-auto mt-4">
-				<Button
-					type="submit"
-					disabled={otp.length < 6 ? true : false}
-					className="w-full inline-flex justify-center mb-2 whitespace-nowrap rounded-lg bg-indigo-500 px-3.5 py-2.5 text-sm font-medium text-white shadow-sm shadow-indigo-950/10 hover:bg-indigo-600 focus:outline-none focus:ring focus:ring-indigo-300 focus-visible:outline-none focus-visible:ring focus-visible:ring-indigo-300 transition-colors duration-150">
-					Verify Account
-				</Button>
-				<form action={resendAction}>
+		<div>
+			<form id="otp-form" ref={codeFormRef} action={verifyEmailAction}>
+				<div className="flex items-center justify-center flex-col">
+					<OTPInput
+						value={otp}
+						onChange={setOtp}
+						numInputs={8}
+						renderSeparator={<span>{''}</span>}
+						shouldAutoFocus={true}
+						renderInput={(props) => <input {...props} />}
+						inputStyle={{
+							width: '2.2rem',
+							height: '2.2rem',
+							borderRadius: '.4rem',
+							backgroundColor: '#eaeaef',
+						}}
+						containerStyle={{
+							display: 'flex',
+							gap: '.2rem',
+							justifyContent: 'center',
+						}}
+					/>
+					<input type="text" name="code" value={otp} hidden />
+				</div>
+				{verifyEmailState?.error && (
+					<p className="my-2 text-center text-red-500">
+						{verifyEmailState?.error}
+					</p>
+				)}
+				<div className="max-w-[260px] placeholder:text-blue-500 mx-auto mt-4">
 					<Button
-						className="w-full"
-						variant="secondary"
-						disabled={verifyEmailState?.error ? true : false}>
-						Resend Code
+						type="submit"
+						disabled={otp.length < 6 ? true : false}
+						className="w-full inline-flex justify-center mb-2 whitespace-nowrap rounded-lg bg-indigo-500 px-3.5 py-2.5 text-sm font-medium text-white shadow-sm shadow-indigo-950/10 hover:bg-indigo-600 focus:outline-none focus:ring focus:ring-indigo-300 focus-visible:outline-none focus-visible:ring focus-visible:ring-indigo-300 transition-colors duration-150">
+						Verify Account
 					</Button>
+				</div>
+			</form>
+
+			<div>
+				<form action={resendAction}>
+					<Button variant="link">Resend Code</Button>
 				</form>
 				<form action={logout}>
 					<Button variant="link" className="p-0 font-normal ">
@@ -90,7 +94,7 @@ const OtpForm = () => {
 					</Button>
 				</form>
 			</div>
-		</form>
+		</div>
 	);
 };
 

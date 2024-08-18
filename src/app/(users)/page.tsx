@@ -1,194 +1,111 @@
 'use client';
-import React, { useCallback, useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { CircleX, Edit } from 'lucide-react';
-import { useForm } from 'react-hook-form';
-import { IMember } from '@/types';
+import Logo from '@/assets/images/hotr white logo  edited.png';
+import Image from 'next/image';
+import { Card } from '@/components/ui/card';
+import Alarm from '@/assets/images/alarm.jpg';
+import Smile from '@/assets/images/smile.avif';
+import Link from 'next/link';
+import { Settings } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { cn } from '@/lib/utils';
-import { useRouter } from 'next/navigation';
-import { getProfile, logout, updateProfile } from '@/lib/lucia/actions';
-import { useFormState } from 'react-dom';
-import { useToast } from '@/components/ui/use-toast';
+import { format } from 'date-fns/format';
+import QRCodeViewer from '@/components/shared/qr-code';
+import { useAppSelector } from '@/redux/hook';
 
-const Profile = () => {
-	const router = useRouter();
-	const { toast } = useToast();
-	const [resendState, resendAction] = useFormState(updateProfile, null);
-	const [member, setMember] = useState<IMember>();
-	const [editing, setEditing] = useState(false);
-	const [form, setForm] = useState<Partial<IMember>>({
-		firstName: '',
-		lastName: '',
-		email: '',
-		phoneNumber: '',
-		gender: 'M',
-	});
-	const profile = useCallback(() => {
-		getProfile().then((member) => {
-			if (member?.success) {
-				setMember({ ...member.success });
-				setForm({ ...member.success });
-				setEditing(false);
-				toast({
-					title: 'Profile Updated',
-					description: '',
-					variant: 'default',
-				});
-			}
-		});
-	}, [toast]);
-
-	const toggleEdit = () => {
-		setEditing((prev) => !prev);
-	};
-
-	useEffect(() => {
-		profile();
-	}, [profile]);
-	useEffect(() => {
-		if (resendState?.success) {
-			profile();
-			setEditing(false);
-		}
-	}, [profile, resendState?.success]);
+const Home = () => {
+	const member = useAppSelector((state) => state.Member);
 	return (
-		<div className="font-inter antialiased min-h-screen flex items-center justify-center px-3 bg-gray-100">
-			<div className="max-w-md mx-auto bg-white px-2 py-6 w-full rounded-lg shadow-lg">
-				<div className="flex items-center justify-between mb-6 relative">
-					<div className="flex items-center">
-						<Avatar className="h-14 w-14">
-							<AvatarFallback className=" capitalize">
-								{member?.firstName?.charAt(0) || ''}
-								{member?.lastName?.charAt(0) || ''}
-							</AvatarFallback>
-						</Avatar>
-						<div className="ml-4">
-							<h2 className="text-xl font-bold">{`${member?.firstName || ''} ${
-								member?.lastName || ''
-							}`}</h2>
-							<p className="text-gray-600">{member?.email || ''}</p>
-						</div>
+		<div className="w-full">
+			<div className=" w-full px-6 py-2 h-[300px] max-h-[350px] bg-green-700 rounded-b-[4rem]">
+				<div className="flex justify-between text-white items-center h-24">
+					<Image src={Logo} alt="Logo" className="w-16 h-12 rounded-full" />
+					<div className=" space-y-1">
+						<h3 className="text-lg font-medium">
+							House On The Rock <span className="text-sm">PHC</span>
+						</h3>
+						<h6 className="text-sm font-normal text-center">
+							The Heritage House
+						</h6>
 					</div>
-					<div className=" absolute top-0 right-0">
-						<Button
-							variant={'ghost'}
-							onClick={toggleEdit}
-							className={cn(
-								' py-1 px-3 bg-blue-500 hover:text-white text-white rounded-xl hover:bg-blue-600',
-								editing ? 'text-red-500' : ''
-							)}>
-							{editing ? <CircleX size={20} /> : <Edit size={18} />}
-						</Button>
+					<Link href={'/settings'}>
+						<Settings size={24} />
+					</Link>
+				</div>
+				<div className=" w-full mt-12 relative">
+					<div className=" w-full justify-center flex absolute top-0 z-10 left-0">
+						<Card className=" py-6  w-[90%] space-y-4">
+							<div className="flex px-3 items-center border-b border-gray-300 flex-col justify-between gap-4">
+								<Avatar className="h-14 w-14">
+									<AvatarFallback className=" capitalize">
+										{member?.firstName?.charAt(0) || ''}
+										{member?.lastName?.charAt(0) || ''}
+									</AvatarFallback>
+								</Avatar>
+								<div className=" space-y-1 pb-3 text-center">
+									<h2 className="text-xl font-bold text-center">
+										Welcome <br /> {member?.firstName} {member?.lastName}
+									</h2>
+									{member.createdAt && (
+										<p className="text-gray-400 text-sm font-medium">
+											Joined,{' '}
+											<time>
+												{format(
+													new Date(member.createdAt),
+													'MMM d, yyyy, hh:mm a'
+												)}
+											</time>
+										</p>
+									)}
+								</div>
+							</div>
+							<div className="flex items-center gap-4 px-4 justify-between">
+								<div>
+									<h5 className="text-sm font-medium text-nowrap">
+										Your QR-code
+									</h5>
+									<p className="text-gray-400 text-xs">
+										Generate your QR Code.
+									</p>
+								</div>
+								<QRCodeViewer {...member} />
+							</div>
+						</Card>
 					</div>
 				</div>
-				<form action={resendAction}>
-					<div className="mb-4">
-						<Input
-							type="text"
-							placeholder="First Name"
-							name="firstName"
-							onChange={(e) => {
-								setForm((v) => ({ ...v, firstName: e.target.value }));
-							}}
-							value={form.firstName}
-							disabled={!editing}
-						/>
+			</div>
+			<div className="mt-[160px] space-y-4 px-6">
+				<Card className="bg-green-100 py-4 px-4 space-y-3">
+					<div className="flex px-3 items-center flex-col justify-between gap-4">
+						<div className="w-24 h-24 rouded-full overflow-hidden">
+							<Image
+								src={Smile}
+								alt="smile"
+								className=" object-cover rounded-full"
+							/>
+						</div>
+						<div className=" space-y-1 pb-3 text-center">
+							<h2 className="text-xl font-bold">You have almost reached</h2>
+							<p className="text-gray-400 text-sm font-medium">
+								Your profile is almost complete, update your profile to enjoy
+								the amazing features that will be rolled out soon.
+							</p>
+						</div>
 					</div>
-					<div className="mb-4">
-						<Input
-							type="text"
-							name="lastName"
-							placeholder="Last Name"
-							onChange={(e) => {
-								setForm((v) => ({ ...v, lastName: e.target.value }));
-							}}
-							value={form.lastName}
-							disabled={!editing}
-						/>
+				</Card>
+				<Card className=" grid grid-cols-[auto,40%] gap-2 my-2 py-4 border-0">
+					<div className="w-full">
+						<h3 className="text-lg font-semibold mb-2">Events Timeline</h3>
+						<p className="text-sm font-normal text-gray-500">
+							Your upcoming church events will be rolled out here in a short
+							while
+						</p>
 					</div>
-					<div className="mb-4">
-						<Input
-							type="email"
-							name="email"
-							placeholder="Email"
-							onChange={(e) => {
-								setForm((v) => ({ ...v, email: e.target.value }));
-							}}
-							value={form.email}
-							disabled={!editing}
-						/>
+					<div className="w-full flex justify-center items-center">
+						<Image src={Alarm} alt="Alarm Clock" className=" w-20 h-20" />
 					</div>
-					<div className="mb-4">
-						<Input
-							type="text"
-							name="phoneNumber"
-							placeholder="Phone Number"
-							onChange={(e) => {
-								setForm((v) => ({ ...v, phoneNumber: e.target.value }));
-							}}
-							value={form.phoneNumber}
-							disabled={true}
-						/>
-					</div>
-					<div className="flex gap-2 justify-start px-2 items-center mb-2">
-						<span className=" text-black text-base">Gender</span>
-						<span
-							onClick={() => {
-								editing && setForm((v) => ({ ...v, gender: 'M' }));
-							}}
-							className={cn(
-								' border-2 rounded-full w-8 h-8 flex items-center justify-center text-black text-sm  border-black',
-								form.gender === 'M' ? 'border-[#2FAD64]' : 'border-black'
-							)}>
-							M
-						</span>
-						<span
-							onClick={() => {
-								editing && setForm((v) => ({ ...v, gender: 'F' }));
-							}}
-							className={cn(
-								' border-2 rounded-full w-8 h-8 flex items-center justify-center text-black text-sm border-black',
-								form.gender === 'F' ? 'border-[#2FAD64]' : 'border-white'
-							)}>
-							F
-						</span>
-						<input type="text" name="gender" value={form.gender} hidden />
-					</div>
-					<div className="w-full flex justify-end">
-						<>
-							{editing && (
-								<Button
-									type="submit"
-									className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">
-									Update
-								</Button>
-							)}
-							{!editing && (
-								<Button
-									variant={'link'}
-									size={'sm'}
-									onClick={() => router.push('/qr-code')}
-									className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">
-									Get QR code
-								</Button>
-							)}
-						</>
-					</div>
-				</form>
-				<form action={logout}>
-					<Button
-						variant={'link'}
-						type="submit"
-						size={'sm'}
-						className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">
-						Logout
-					</Button>
-				</form>
+				</Card>
 			</div>
 		</div>
 	);
 };
 
-export default Profile;
+export default Home;

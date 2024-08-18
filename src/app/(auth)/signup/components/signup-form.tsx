@@ -8,28 +8,31 @@ import { LoaderIcon } from 'lucide-react';
 import Logo from '@/assets/images/hotr white logo  edited.png';
 import Image from 'next/image';
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
-import { useFormState, useFormStatus } from 'react-dom';
-import { signup } from '@/lib/lucia/actions';
+import { useFormState } from 'react-dom';
 import Link from 'next/link';
 import { Form } from '../../layout';
+import { signup } from '@/lib/auth/actions';
 
 const Signup = () => {
 	const [state, dispatch] = useFormState(signup, undefined);
-	const { pending } = useFormStatus();
+	const [pending, setPending] = useState(false);
 	const [form, setForm] = useState<Form>({
 		firstName: '',
 		lastName: '',
 		email: '',
 		phoneNumber: '',
-		gender: 'M',
+		gender: 'Male',
 		password: '',
 		comfirmPassword: '',
 	});
 	return (
 		<form
-			action={dispatch}
-			className="absolute z-20 left-0 bottom-0 bg-black/60 w-screen h-screen flex justify-center items-center">
-			<div className="  w-[80%] md:w-[40%]">
+			action={(formData) => {
+				setPending(true);
+				dispatch(formData);
+			}}
+			className=" flex justify-center items-center">
+			<div className="  max-w-md w-full ">
 				<div className=" w-[80px] h-[80px] p-2 mx-auto border-4 border-white overflow-hidden rounded-full flex items-center justify-center">
 					<Image src={Logo} alt="logo" width={77} height={77} className="" />
 				</div>
@@ -124,42 +127,53 @@ const Signup = () => {
 							<input type="text" name="gender" value={form.gender} hidden />
 							<span className=" text-white text-xl">Gender</span>
 							<span
-								onClick={() => setForm((v) => ({ ...v, gender: 'M' }))}
+								onClick={() => setForm((v) => ({ ...v, gender: 'Male' }))}
 								className={cn(
 									' border-2 rounded-full w-10 h-10 flex items-center justify-center text-white text-xl  border-white',
-									form.gender === 'M' ? 'border-[#2FAD64]' : 'border-white'
+									form.gender === 'Male' ? 'border-[#2FAD64]' : 'border-white'
 								)}>
 								M
 							</span>
 							<span
-								onClick={() => setForm((v) => ({ ...v, gender: 'F' }))}
+								onClick={() => setForm((v) => ({ ...v, gender: 'Female' }))}
 								className={cn(
 									' border-2 rounded-full w-10 h-10 flex items-center justify-center text-white text-xl border-white',
-									form.gender === 'F' ? 'border-[#2FAD64]' : 'border-white'
+									form.gender === 'Female' ? 'border-[#2FAD64]' : 'border-white'
 								)}>
 								F
 							</span>
 						</div>
-						<div
-							className="flex min-h-4 items-end space-x-1"
-							aria-live="polite"
-							aria-atomic="true">
-							{state?.fieldError ? (
-								<ul className="list-disc space-y-1 rounded-lg border bg-red-500/10 p-2 text-[0.8rem] font-medium text-red-500">
-									{Object.values(state.fieldError).map((err) => (
-										<li className="ml-4" key={err}>
-											{err}
-										</li>
-									))}
-								</ul>
-							) : state?.formError ? (
-								<>
-									<ExclamationTriangleIcon className="h-5 w-5 text-red-500" />
-									<p className="text-sm text-red-500">{state?.formError}</p>
-								</>
-							) : null}
-						</div>
 						<div>
+							<div
+								className="flex items-end space-x-1"
+								aria-live="polite"
+								aria-atomic="true">
+								{state?.fieldError ? (
+									<ul className="list-disc space-y-1 rounded-lg border bg-red-500/10 p-2 text-[0.8rem] font-medium text-red-500">
+										{Object.values(state.fieldError).map((err) => (
+											<li className="ml-4" key={err}>
+												{err}
+											</li>
+										))}
+									</ul>
+								) : state?.formError ? (
+									<>
+										<ExclamationTriangleIcon className="h-5 w-5 text-red-500" />
+										<p className="text-sm text-red-500">{state?.formError}</p>
+									</>
+								) : null}
+							</div>
+							<div className="flex flex-wrap justify-between px-2">
+								<Button variant={'link'} size={'sm'} className="p-0" asChild>
+									<Link
+										href={'/login'}
+										className=" text-sm text-white flex items-center">
+										Already signed up? Login now.
+									</Link>
+								</Button>
+							</div>
+						</div>
+						<div className="mb-10">
 							<Button
 								disabled={pending}
 								size="lg"
@@ -170,14 +184,6 @@ const Signup = () => {
 								)}
 								Submit
 							</Button>
-							<div className="mb-2 mt-1">
-								<span className="text-white hover:text-gray-300">
-									Already have an account?
-									<Link href={'/login'} className=" text-blue-500 ml-2">
-										Login
-									</Link>
-								</span>
-							</div>
 						</div>
 					</div>
 				</div>

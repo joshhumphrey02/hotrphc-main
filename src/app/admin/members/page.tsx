@@ -1,9 +1,9 @@
-import { columns } from '@/app/admin/members/components/columns';
-import { DataTable } from '@/components/shared/data-table';
-import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { DownloadIcon } from 'lucide-react';
-import { getMembersData } from './components/query';
+import { Plus } from 'lucide-react';
+import { getMemberData, getMembersData } from './components/query';
+import TabsView from './components/tabs-view';
+import Link from 'next/link';
+import MemberDetailsDrawer from './components/member-details-drawer';
 
 type Props = {
 	searchParams: {
@@ -12,6 +12,7 @@ type Props = {
 		take?: string;
 		skip?: string;
 		memberId?: string;
+		editMember?: boolean;
 	};
 };
 export default async function page(props: Props) {
@@ -22,9 +23,11 @@ export default async function page(props: Props) {
 		orderBy: {
 			createdAt: 'desc',
 		},
+		tab: searchParams.tab,
 	});
+	const memberData = await getMemberData({ memberId: searchParams.memberId });
 	return (
-		<div className="w-full h-full py-16 px-8 space-y-8">
+		<div className="w-full h-full py-8 pt-4 px-2 pl-0 space-y-6">
 			<div>
 				<h1 className=" text-3xl font-medium mb-1">Members list</h1>
 				<p className="text-gray-500">View all registered membersr’s.</p>
@@ -38,14 +41,20 @@ export default async function page(props: Props) {
 						</p>
 					</div>
 					<div className="ml-auto">
-						<Button variant="outline">
-							<DownloadIcon className="h-5 w-5 mr-2" />
-							Download
-						</Button>
+						<Link
+							href="#"
+							className=" px-3 lg:flex hidden py-2 items-center gap-2 rounded-md bg-yellow-500 hover:bg-yellow-600 text-white">
+							<Plus /> Add Member
+						</Link>
 					</div>
 				</div>
-				<DataTable columns={columns} data={data} />
+				<TabsView data={data} tab={searchParams.tab || 'All'} />
 			</Card>
+			<MemberDetailsDrawer
+				open={!!searchParams.memberId}
+				user={memberData}
+				editUser={!!searchParams.editMember}
+			/>
 		</div>
 	);
 }

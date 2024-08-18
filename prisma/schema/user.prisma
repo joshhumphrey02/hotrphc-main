@@ -1,0 +1,92 @@
+model User {
+  id              String      @id @default(uuid())
+  uid             Int         @unique @default(autoincrement())
+  email           String     @unique @db.VarChar(255)
+  firstName       String     @db.VarChar(255)
+  lastName        String     @db.VarChar(255)
+  middleName      String?     @db.VarChar(255)
+  phoneNumber     String      @db.VarChar(20)
+  image          String?
+  countryCode     String?      @default("NG") @db.VarChar(3)
+  userTypeId      String?      @default("USER")
+  hashedPassword  String
+  isPhoneVerified Boolean @default(false)
+  isEmailVerified Boolean @default(false)
+
+  dob                  DateTime?
+  gender               String?
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  photoId              String?
+  bornAgain             String?             
+  maritalStatus String?
+  employmentStatus String?
+  occupation String?
+
+  onlineStatus   UserOnlineStatus[]
+  reports           Report[]
+
+  requests       Request[]
+  notifications        Notification[] @relation("NotificationOwner")
+  addresses            String?     @db.VarChar(255)
+  deletedAt       DateTime?
+  status       UserStatus     @default(ACTIVE)
+  role           Role @default(MEMBER)
+  sessions            UserSession[]
+  VerificationToken   VerificationToken[]
+  PasswordResetTokens PasswordResetTokens[]
+
+  @@unique([countryCode, phoneNumber])
+  @@index([email, phoneNumber])
+}
+
+
+model AllowedEmail {
+  id    String @id @default(uuid())
+  uid   Int    @unique @default(autoincrement())
+  email String @unique @db.VarChar(255)
+
+  allowedPages String[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model VerificationToken {
+  id        String    @id @default(cuid())
+  token     String    @unique
+  expiresAt DateTime
+  email     String
+  userId    String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([email, token])
+}
+
+model UserSession {
+  id        String    @id @default(cuid())
+  userId    String
+  expiresAt DateTime?
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PasswordResetTokens {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId    String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserOnlineStatus {
+  id             String       @id @default(uuid())
+  uid            Int          @unique @default(autoincrement())
+  userId         String
+  user           User         @relation(fields: [userId], references: [id])
+  status         OnlineStatus @default(ONLINE)
+  deviceUniqueId String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
